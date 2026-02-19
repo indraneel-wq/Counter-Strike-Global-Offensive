@@ -1,0 +1,6 @@
+__pycache__/
+*.pkl
+*.pyc
+venv/
+.DS_Store
+csgo_round_snapshots.csv

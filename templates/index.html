@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS:GO Winner Predictor</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ct-color: #5d79ae;
+            --t-color: #de9b35;
+            --bg-dark: #0b0c10;
+            --card-bg: #1f2833;
+            --text-light: #c5c6c7;
+            --accent: #66fcf1;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Rajdhani', sans-serif;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://w.wallhaven.cc/full/vg/wallhaven-vg88p5.jpg');
+            /* You might want to host a local image */
+            background-size: cover;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .app-title {
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 3rem;
+            letter-spacing: 3px;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+            color: #fff;
+        }
+
+        .team-card {
+            background: rgba(31, 40, 51, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            height: 100%;
+            border-top: 5px solid transparent;
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .ct-card {
+            border-color: var(--ct-color);
+            box-shadow: 0 0 20px rgba(93, 121, 174, 0.2);
+        }
+
+        .t-card {
+            border-color: var(--t-color);
+            box-shadow: 0 0 20px rgba(222, 155, 53, 0.2);
+        }
+
+        .team-header {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .ct-header {
+            color: var(--ct-color);
+        }
+
+        .t-header {
+            color: var(--t-color);
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .form-control {
+            background-color: #0b0c10;
+            border: 1px solid #45a29e;
+            color: #fff;
+            border-radius: 5px;
+        }
+
+        .form-control:focus {
+            background-color: #1f2833;
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 0.25rem rgba(102, 252, 241, 0.25);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            color: #45a29e;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #45a29e;
+            padding-bottom: 5px;
+        }
+
+        .game-state-card {
+            background: rgba(31, 40, 51, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid #45a29e;
+        }
+
+        .btn-predict {
+            background: linear-gradient(45deg, #1f4037, #99f2c8);
+            /* Generic fallback */
+            background: linear-gradient(45deg, var(--ct-color), var(--t-color));
+            border: none;
+            color: #fff;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            width: 100%;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-predict:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        /* Result Styles */
+        .result-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+        }
+
+        .result-content {
+            text-align: center;
+            animation: zoomIn 0.5s ease;
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .winner-logo {
+            font-size: 6rem;
+            margin-bottom: 20px;
+        }
+
+        .winner-title {
+            font-size: 4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .confidence-bar {
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            margin-top: 20px;
+            overflow: hidden;
+            width: 300px;
+            margin: 20px auto;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: #fff;
+            transition: width 1s ease;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            margin-top: 30px;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        /* Checkbox Switch */
+        .form-check-input {
+            background-color: #333;
+            border-color: #555;
+            width: 3em;
+            height: 1.5em;
+        }
+
+        .form-check-input:checked {
+            background-color: #ff4757;
+            /* Bomb red */
+            border-color: #ff4757;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <div class="app-title">
+            <i class="fas fa-crosshairs me-3"></i>CS:GO Match Oracle
+        </div>
+
+        <form id="predictForm">
+            <!-- Game State Center -->
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="game-state-card">
+                        <div class="form-check form-switch d-flex justify-content-center align-items-center gap-3">
+                            <input class="form-check-input" type="checkbox" id="bomb_planted" name="bomb_planted">
+                            <label class="form-check-label fs-4 fw-bold text-danger" for="bomb_planted">
+                                <i class="fas fa-bomb me-2"></i>Bomb Planted
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Counter-Terrorists Column -->
+                <div class="col-lg-6">
+                    <div class="team-card ct-card">
+                        <div class="team-header ct-header">
+                            <i class="fas fa-shield-alt"></i> Counter-Terrorists
+                        </div>
+
+                        <div class="section-title">Team Status</div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label">Total Health</label>
+                                <input type="number" class="form-control" name="ct_health" value="500">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Players Alive</label>
+                                <input type="number" class="form-control" name="ct_players_alive" value="5" max="5"
+                                    min="0">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Total Money</label>
+                                <input type="number" class="form-control" name="ct_money" value="4000">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Total Armor</label>
+                                <input type="number" class="form-control" name="ct_armor" value="500">
+                            </div>
+                        </div>
+
+                        <div class="section-title">Weapons & Gear</div>
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <label class="form-label small">M4A4/M4A1</label>
+                                <input type="number" class="form-control" name="ct_weapon_m4a4" value="0">
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label small">AWP</label>
+                                <input type="number" class="form-control" name="ct_weapon_awp" value="0">
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label small">Full AK47s (Pickup)</label>
+                                <input type="number" class="form-control" name="ct_weapon_ak47" value="0">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">AUG</label>
+                                <input type="number" class="form-control" name="ct_weapon_aug" value="0">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">SG553 (Pickup)</label>
+                                <input type="number" class="form-control" name="ct_weapon_sg553" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terrorists Column -->
+                <div class="col-lg-6">
+                    <div class="team-card t-card">
+                        <div class="team-header t-header">
+                            <i class="fas fa-skull"></i> Terrorists
+                        </div>
+
+                        <div class="section-title">Team Status</div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label">Total Health</label>
+                                <input type="number" class="form-control" name="t_health" value="500">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Players Alive</label>
+                                <input type="number" class="form-control" name="t_players_alive" value="5" max="5"
+                                    min="0">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Total Money</label>
+                                <input type="number" class="form-control" name="t_money" value="4000">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Total Armor</label>
+                                <input type="number" class="form-control" name="t_armor" value="500">
+                            </div>
+                        </div>
+
+                        <div class="section-title">Weapons & Gear</div>
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <label class="form-label small">AK47</label>
+                                <input type="number" class="form-control" name="t_weapon_ak47" value="0">
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label small">AWP</label>
+                                <input type="number" class="form-control" name="t_weapon_awp" value="0">
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label small">SG553</label>
+                                <input type="number" class="form-control" name="t_weapon_sg553" value="0">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">Glocks</label>
+                                <input type="number" class="form-control" name="t_weapon_glock" value="0">
+                            </div>
+                        </div>
+
+                        <div class="section-title">Utilities</div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label small">Smoke Grenades</label>
+                                <input type="number" class="form-control" name="t_grenade_smokegrenade" value="0">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">Flashbangs</label>
+                                <input type="number" class="form-control" name="t_grenade_flashbang" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5 mb-5">
+                <button type="submit" class="btn btn-predict">
+                    <i class="fas fa-microchip me-2"></i> Analyze Round & Predict
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Result Overlay -->
+    <div id="resultOverlay" class="result-overlay">
+        <div class="result-content">
+            <div id="winnerIcon" class="winner-logo"></div>
+            <div class="text-white fs-4 mb-2">PREDICTED ROUND WINNER</div>
+            <div id="winnerText" class="winner-title"></div>
+
+            <div class="fs-5 text-light">CONFIDENCE LEVEL</div>
+            <div class="confidence-bar">
+                <div id="confidenceFill" class="confidence-fill"></div>
+            </div>
+            <div id="confidenceText" class="fs-3 fw-bold text-white"></div>
+
+            <button class="close-btn" onclick="closeResult()">Back to Analysis</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictForm').onsubmit = async function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(this);
+            let jsonData = {};
+
+            jsonData['bomb_planted'] = document.getElementById('bomb_planted').checked;
+
+            formData.forEach((value, key) => {
+                if (key !== 'bomb_planted') {
+                    jsonData[key] = value;
+                }
+            });
+
+            const overlay = document.getElementById('resultOverlay');
+
+            try {
+                let response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(jsonData)
+                });
+
+                let data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                // Update UI
+                const winnerText = document.getElementById('winnerText');
+                const winnerIcon = document.getElementById('winnerIcon');
+                const confidenceFill = document.getElementById('confidenceFill');
+
+                winnerText.innerText = data.winner === 'CT' ? 'COUNTER-TERRORISTS' : 'TERRORISTS';
+
+                if (data.winner === 'CT') {
+                    winnerText.style.color = 'var(--ct-color)';
+                    winnerIcon.innerHTML = '<i class="fas fa-shield-alt" style="color: var(--ct-color)"></i>';
+                    confidenceFill.style.backgroundColor = 'var(--ct-color)';
+                } else {
+                    winnerText.style.color = 'var(--t-color)';
+                    winnerIcon.innerHTML = '<i class="fas fa-skull" style="color: var(--t-color)"></i>';
+                    confidenceFill.style.backgroundColor = 'var(--t-color)';
+                }
+
+                document.getElementById('confidenceText').innerText = data.confidence;
+
+                // Show Overlay
+                overlay.style.display = 'flex';
+
+                // Animate bar
+                setTimeout(() => {
+                    confidenceFill.style.width = data.confidence;
+                }, 100);
+
+            } catch (error) {
+                console.error(error);
+                alert('Failed to get prediction.');
+            }
+        };
+
+        function closeResult() {
+            document.getElementById('resultOverlay').style.display = 'none';
+            document.getElementById('confidenceFill').style.width = '0%';
+        }
+    </script>
+
+</body>
+
+</html>
